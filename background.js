@@ -1,3 +1,15 @@
+const socket = new WebSocket('ws://localhost:8765');
+
+socket.addEventListener('open', (event) => {
+  const payload = { url: "https://example.com", message: "Hello World" };
+  socket.send(JSON.stringify(payload));
+});
+
+socket.addEventListener('message', (event) => {
+  const response = JSON.parse(event.data);
+  console.log('Message from server:', response);
+});
+
 // メッセージリスナーを追加。コンテンツスクリプトからメッセージを受け取る。
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "saveText") { // アクションが"saveText"の場合
