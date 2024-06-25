@@ -1,30 +1,30 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "downloadText") {
-    const blob = new Blob([request.data], { type: 'text/plain' });
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      const url = event.target.result;
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-'); // タイムスタンプをファイル名に追加
-      const filename = `extracted_text_${timestamp}.txt`;
+  if (request.action === "saveText") {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const key = `extracted_text_${timestamp}`;
+    let data = {};
+    data[key] = request.data;
 
-      chrome.downloads.download({
-        url: url,
-        filename: filename
-      });
-      sendResponse({ success: true });
-    };
-    reader.readAsDataURL(blob);
+    chrome.storage.local.set(data, () => {
+      if (chrome.runtime.lastError) {
+        console.error("Error saving text:", chrome.runtime.lastError.message);
+        sendResponse({ success: false, error: chrome.runtime.lastError.message });
+      } else {
+        console.log(`Text saved successfully. Key: ${key}`);
+        sendResponse({ success: true });
+      }
+    });
     return true; // sendResponseを非同期で呼び出すことを示す
   }
 });
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete') {
+chrome.webNavigation.onCompleted.addListener((details) => {
+  if (details.url && !details.url.startsWith('chrome://')) {
     chrome.scripting.executeScript({
-      target: { tabId: tabId },
+      target: { tabId: details.tabId },
       files: ['content.js']
     }, () => {
-      chrome.tabs.sendMessage(tabId, { action: "extractText" }, (response) => {
+      chrome.tabs.sendMessage(details.tabId, { action: "extractText" }, (response) => {
         if (chrome.runtime.lastError) {
           console.log("Runtime error:", chrome.runtime.lastError.message);
         }

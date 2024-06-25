@@ -3,13 +3,7 @@
   "name": "Text Extractor",
   "version": "1.1",
   "description": "Extracts all text from the webpage and saves it locally",
-  "permissions": [
-    "activeTab",
-    "downloads",
-    "webNavigation",
-    "scripting",
-    "storage"
-  ],
+  "permissions": ["activeTab", "webNavigation", "scripting", "storage"],
   "background": {
     "service_worker": "background.js"
   },
