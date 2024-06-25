@@ -1,4 +1,6 @@
 let socket = null;
+const reconnectInterval = 5000; // 再接続の間隔（ミリ秒）
+let reconnectTimeout = null;
 
 // WebSocket接続を確立する関数
 function connectWebSocket() {
@@ -6,6 +8,7 @@ function connectWebSocket() {
 
   socket.addEventListener('open', (event) => {
     console.log('WebSocket connection opened');
+    clearTimeout(reconnectTimeout); // 再接続タイマーをクリア
   });
 
   socket.addEventListener('message', (event) => {
@@ -15,12 +18,24 @@ function connectWebSocket() {
   socket.addEventListener('close', (event) => {
     console.log('WebSocket connection closed');
     socket = null;
+    scheduleReconnect();
   });
 
   socket.addEventListener('error', (error) => {
     console.error('WebSocket error:', error);
     socket = null;
+    scheduleReconnect();
   });
+}
+
+// 再接続をスケジュールする関数
+function scheduleReconnect() {
+  if (!reconnectTimeout) {
+    reconnectTimeout = setTimeout(() => {
+      console.log('Attempting to reconnect WebSocket...');
+      connectWebSocket();
+    }, reconnectInterval);
+  }
 }
 
 // WebSocketでメッセージを送信する関数
