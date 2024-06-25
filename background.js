@@ -41,7 +41,8 @@ function scheduleReconnect() {
 // WebSocketでメッセージを送信する関数
 function sendWebSocketMessage(url, message) {
   if (socket && socket.readyState === WebSocket.OPEN) {
-    const payload = { url: url, message: message };
+    const timestamp = new Date().toISOString();
+    const payload = { url: url, timestamp: timestamp, message: message};;
     console.log('Sending message to server:', payload);
     socket.send(JSON.stringify(payload));
   } else {
